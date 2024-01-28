@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
@@ -5,13 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv, dotenv_values 
 
+load_dotenv()
 app = FastAPI()
 
-import os
-
-# Set environment variable
-os.environ['OPENAI_API_KEY'] = ""
 
 app.add_middleware(
     CORSMiddleware,
