@@ -37,8 +37,17 @@ async def create_response(question: Chat):
     output_parser = StrOutputParser()
     chain = prompt | model | output_parser
 
-    response = chain.invoke({"question": question})
-    print(response)
-    # chats.append(question)
-    return response
+    # response = chain.invoke({"question": question})
+    # print(response)
+    # return response
+    async for chunk in chain.astream({"question": question}):
+        print(chunk)
+
+
+
+
+
+
+
+
 
