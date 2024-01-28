@@ -5,35 +5,52 @@ function App() {
   const [question, setQuestion] = useState("");
   const [response, setResponse] = useState("");
   const [chat, setChat] = useState([{ question: '', response: '' }]);
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isButtonClicked, setIsButtonClicked] = useState(false)
+  const [socket, setSocket] = useState(null);
+
 
   useEffect(() => {
-    axios.get('http://localhost:8000/chats/')
-      .then(response => {
-        setResponse(response.data)
-      })
-      .catch(error => {
-        console.error('Error fetching tasks:', error);
-      });
+    const ws = new WebSocket('ws://localhost:8000/chats');
+    setSocket(ws);
+
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      const response = event.data;
+      console.log(response)
+      setResponse((previousResponse) => `${previousResponse}${response}`);
+      setIsLoading(false)
+      setIsButtonClicked(false)
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket closed');
+    };
+
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
   }, []);
 
   const handleInputChange = event => {
-    const { name, value } = event.target;
+    const { value } = event.target;
     setQuestion(value);
   };
 
   const handleSubmit = async (event) => {
+    setResponse("")
     setIsButtonClicked(true)
     event.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:8000/chats/', { question: question });
-      console.log(response.data); // Handle response from backend
-      setResponse(response.data)
-      setIsLoading(false)
-    } catch (error) {
-      console.error('Error sending input to backend:', error);
+    if (!socket) {
+      console.error('WebSocket connection not established');
+      return;
     }
+    socket.send(question);
   };
 
   return (
@@ -43,7 +60,7 @@ function App() {
         <input type="text" name="question" value={question["question"]} onChange={handleInputChange} placeholder="Question" />
         <button type="submit">Click Me</button>
       </form> 
-      {isButtonClicked && isLoading ? <p>Loading...</p> : <p>{response}</p>}
+      {isButtonClicked | isLoading ? <p>Loading...</p> : <p>{response}</p>}
     </div>
   );
 }
