@@ -11,7 +11,7 @@ app = FastAPI()
 import os
 
 # Set environment variable
-os.environ['OPENAI_API_KEY'] = "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"
+os.environ['OPENAI_API_KEY'] = ""
 
 app.add_middleware(
     CORSMiddleware,
